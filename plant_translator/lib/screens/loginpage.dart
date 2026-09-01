@@ -436,11 +436,15 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                 ).createShader(bounds),
                                 child: Text(
                                   'Welcome back',
+                                   textAlign: TextAlign.center,
+                                   
                                   style: TextStyle(
                                     fontSize: titleFontSize,
+                                  
                                     fontWeight: FontWeight.w900,
                                     color: Colors.white,
                                     letterSpacing: -1.0,
+                                    
                                     height: 1.15,
                                   ),
                                 ),
