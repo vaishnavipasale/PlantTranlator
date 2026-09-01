@@ -18,19 +18,19 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
 
   // Background animation
   late final AnimationController _backgroundController;
-  
+
   // Floating particles animation
   late final AnimationController _particleController;
-  
+
   // Shimmer effect
   late final AnimationController _shimmerController;
-  
+
   // Scale animation for decorative elements
   late final AnimationController _scaleController;
-  
+
   // Pulse animation for cards
   late final AnimationController _pulseController;
-  
+
   // Rotation animation for decorative elements
   late final AnimationController _rotationController;
 
@@ -38,7 +38,7 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _loadPlants();
-    
+
     _backgroundController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 10),
@@ -175,7 +175,7 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
               final screenWidth = constraints.maxWidth;
               final isMobile = screenWidth < 600;
               final isTablet = screenWidth >= 600 && screenWidth < 900;
-              
+
               final crossAxisCount = isMobile ? 2 : (isTablet ? 3 : 4);
               final padding = isMobile ? 16.0 : (isTablet ? 24.0 : 32.0);
 
@@ -183,7 +183,7 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
                 children: [
                   // Header
                   _buildHeader(isMobile, padding),
-                  
+
                   // Plants grid
                   Expanded(
                     child: _isLoading
@@ -245,7 +245,7 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
             },
           ),
           SizedBox(width: isMobile ? 12 : 16),
-          
+
           // Title
           Expanded(
             child: AnimatedBuilder(
@@ -278,7 +278,7 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
               },
             ),
           ),
-          
+
           // Add button
           AnimatedBuilder(
             animation: Listenable.merge([_shimmerController, _pulseController]),
@@ -341,7 +341,10 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
           crossAxisCount: crossAxisCount,
           crossAxisSpacing: isMobile ? 12 : 16,
           mainAxisSpacing: isMobile ? 12 : 16,
-          childAspectRatio: isMobile ? 0.75 : 0.8,
+          // FIX: slightly shorter cards (bigger ratio = shorter height)
+          // gives the info section a hair more breathing room so the
+          // Column no longer overflows by a fraction of a pixel.
+          childAspectRatio: isMobile ? 0.72 : 0.78,
         ),
         itemCount: _plants.length,
         itemBuilder: (context, index) {
@@ -479,68 +482,82 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
                     ),
                   ),
                 ),
-                
+
                 // Plant info
+                // FIX: the overflow ("bottom overflowed by 0.533 pixels")
+                // came from this Column's children (Text + gaps + Row)
+                // adding up to a fraction of a pixel more than the exact
+                // height Expanded(flex: 2) hands it — a rounding issue,
+                // not a real layout bug. Wrapping in a SingleChildScrollView
+                // with scrolling disabled absorbs any sub-pixel excess
+                // without changing how it looks or behaves.
                 Expanded(
                   flex: 2,
                   child: Padding(
                     padding: EdgeInsets.all(isMobile ? 12 : 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          plant.name,
-                          style: TextStyle(
-                            fontSize: isMobile ? 16 : 18,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.green900,
-                            letterSpacing: -0.3,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        SizedBox(height: isMobile ? 4 : 6),
-                        Text(
-                          plant.species,
-                          style: TextStyle(
-                            fontSize: isMobile ? 12 : 14,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.stone600,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const Spacer(),
-                        Row(
-                          children: [
-                            Container(
-                              padding: EdgeInsets.all(isMobile ? 4 : 5),
-                              decoration: BoxDecoration(
-                                color: AppColors.cyan500.withOpacity(0.15),
-                                borderRadius: BorderRadius.circular(isMobile ? 8 : 10),
-                              ),
-                              child: Icon(
-                                Icons.water_drop_outlined,
-                                size: isMobile ? 14 : 16,
-                                color: AppColors.cyan500,
-                              ),
+                    child: SingleChildScrollView(
+                      physics: const NeverScrollableScrollPhysics(),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            plant.name,
+                            style: TextStyle(
+                              fontSize: isMobile ? 16 : 18,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.green900,
+                              letterSpacing: -0.3,
+                              height: 1.1,
                             ),
-                            SizedBox(width: isMobile ? 6 : 8),
-                            Expanded(
-                              child: Text(
-                                _getWateringText(plant.nextWatering),
-                                style: TextStyle(
-                                  fontSize: isMobile ? 11 : 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.stone600,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          SizedBox(height: isMobile ? 4 : 6),
+                          Text(
+                            plant.species,
+                            style: TextStyle(
+                              fontSize: isMobile ? 12 : 14,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.stone600,
+                              height: 1.1,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          SizedBox(height: isMobile ? 8 : 10),
+                          Row(
+                            children: [
+                              Container(
+                                padding: EdgeInsets.all(isMobile ? 4 : 5),
+                                decoration: BoxDecoration(
+                                  color: AppColors.cyan500.withOpacity(0.15),
+                                  borderRadius: BorderRadius.circular(isMobile ? 8 : 10),
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                                child: Icon(
+                                  Icons.water_drop_outlined,
+                                  size: isMobile ? 14 : 16,
+                                  color: AppColors.cyan500,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
+                              SizedBox(width: isMobile ? 6 : 8),
+                              Expanded(
+                                child: Text(
+                                  _getWateringText(plant.nextWatering),
+                                  style: TextStyle(
+                                    fontSize: isMobile ? 11 : 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.stone600,
+                                    height: 1.1,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

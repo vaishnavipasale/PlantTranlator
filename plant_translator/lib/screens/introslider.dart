@@ -225,7 +225,6 @@ class _IntroSliderState extends State<IntroSlider> with TickerProviderStateMixin
                 final screenWidth = constraints.maxWidth;
                 final isMobile = screenWidth < 600;
                 final isTablet = screenWidth >= 600 && screenWidth < 900;
-                final isDesktop = screenWidth >= 900;
                 
                 final iconSize = isMobile ? 120.0 : (isTablet ? 150.0 : 180.0);
                 final titleFontSize = isMobile ? 28.0 : (isTablet ? 34.0 : 40.0);
@@ -330,7 +329,6 @@ class _IntroSliderState extends State<IntroSlider> with TickerProviderStateMixin
                         child: AnimatedBuilder(
                           animation: _shimmerController,
                           builder: (context, child) {
-                            final shimmerValue = _shimmerController.value;
                             return DecoratedBox(
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(isMobile ? 16 : 18),

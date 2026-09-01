@@ -9,14 +9,17 @@ import 'alerts_tab.dart';
 import 'profile_tab.dart';
 
 class MainWrapper extends StatefulWidget {
-  const MainWrapper({super.key});
+  const MainWrapper({super.key, this.initialIndex = 0});
+
+  /// Which bottom-nav tab to open on. 0=Home, 1=Search, 2=Scan, 3=Alerts, 4=Profile.
+  final int initialIndex;
 
   @override
   State<MainWrapper> createState() => _MainWrapperState();
 }
 
 class _MainWrapperState extends State<MainWrapper> with TickerProviderStateMixin {
-  int _currentIndex = 0;
+  late int _currentIndex = widget.initialIndex;
 
   // Background animation
   late final AnimationController _backgroundController;
